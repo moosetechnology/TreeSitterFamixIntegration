@@ -46,6 +46,39 @@ FamixTSAbstractVisitor >> modelClass [
 	^ self subclassResponsibility
 ]
 
+{ #category : 'private' }
+FamixTSAbstractVisitor >> relativeFilePath [
+
+	self model rootFolder ifNil: [ ^ self fileReference fullName removePrefix: '/' ].
+
+	^ (self fileReference relativeTo: self model rootFolder asPath) pathString
+]
+
+{ #category : 'private' }
+FamixTSAbstractVisitor >> setSourceAnchor: aFamixEntity from: aTSNode [
+
+	^ self
+		  setSourceAnchorTo: aFamixEntity
+		  fileName: aTSNode relativePath
+		  start: aTSNode startPosition
+		  end: aTSNode endPosition
+]
+
+{ #category : 'private' }
+FamixTSAbstractVisitor >> setSourceAnchorTo: aFamixEntity fileName: aString start: aNumber end: anotherNumber [
+
+	aFamixEntity sourceAnchor: (model newIndexedFileAnchor
+			 fileName: aString;
+			 startPos: aNumber;
+			 endPos: anotherNumber;
+			 mooseModel: self model;
+			 yourself).
+
+	(aFamixEntity class includesTrait: FamixTCanBeStub) ifTrue: [ aFamixEntity isStub: false ].
+
+	^ aFamixEntity
+]
+
 { #category : 'accessing' }
 FamixTSAbstractVisitor >> sourceText [
 
