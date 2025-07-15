@@ -18,7 +18,7 @@ BaselineOfTreeSitterFamixIntegration >> baseline: spec [
 				symbolResolver: spec.
 
 			"Packages"
-			spec package: 'TreeSitterFamixIntegration' with: [ spec requires: #( TreeSitter SymbolResolver ) ] ]
+			spec package: 'TreeSitter-Famix-Integration' with: [ spec requires: #( TreeSitter SymbolResolver ) ] ]
 ]
 
 { #category : 'accessing' }
