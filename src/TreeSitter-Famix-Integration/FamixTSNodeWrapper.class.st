@@ -48,7 +48,7 @@ FamixTSNodeWrapper >> collectNamedChild [
 
 { #category : 'accessing' }
 FamixTSNodeWrapper >> completeSource [
-	^ self rootNode source
+	^ self rootNode completeSource
 ]
 
 { #category : 'collection' }
@@ -71,7 +71,7 @@ FamixTSNodeWrapper >> doesNotUnderstand: aMessage [
 { #category : 'accessing' }
 FamixTSNodeWrapper >> endPosition [
 
-	^ self source positionFromTSPoint: tsNode endPoint
+	^ self completeSource positionFromTSPoint: tsNode endPoint
 ]
 
 { #category : 'inspector' }
@@ -101,7 +101,7 @@ FamixTSNodeWrapper >> fullSourceInspectorExtension: aBuilder [
 	^ aBuilder newCode
 		  withoutSyntaxHighlight;
 		  withLineNumbers;
-		  text: self source asString;
+		  text: self completeSource asString;
 		  addTextSegmentDecoration: (SpTextPresenterDecorator forHighlight
 				   interval: (self startPosition to: self endPosition + 1);
 				   yourself);
@@ -183,11 +183,6 @@ FamixTSNodeWrapper >> rootNode [
 	^ self parent rootNode
 ]
 
-{ #category : 'accessing' }
-FamixTSNodeWrapper >> source [
-	^ self rootNode source
-]
-
 { #category : 'inspector' }
 FamixTSNodeWrapper >> sourceInspectorExtension: builder [
 
@@ -208,7 +203,7 @@ FamixTSNodeWrapper >> sourceText [
 { #category : 'accessing' }
 FamixTSNodeWrapper >> startPosition [
 
-	^ (self source positionFromTSPoint: tsNode startPoint) + 1
+	^ (self completeSource positionFromTSPoint: tsNode startPoint) + 1
 ]
 
 { #category : 'accessing' }
