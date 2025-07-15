@@ -26,17 +26,12 @@ FamixTSAbstractImporter >> errorReport [
 FamixTSAbstractImporter >> import: aFileReference [
 
 	| fileReference |
-	fileReference := aFileReference asFileReference. "In case the user provided a file name instead of a file reference."
-
+	"In case the user provided a file name instead of a file reference.""We should probably handle it another way in production."
+	fileReference := aFileReference asFileReference.
 	self initializeVisitorAndModelUsing: fileReference.
-
 	self importFileReference: fileReference.
-
 	visitor resolveUnresolvedSymbols.
-
-	self flag: #todo. "We should probably handle it another way in production."
-	self errorReport ifNotEmpty: [ self errorReport inspect ].
-
+	self manageErrorReport.
 	^ visitor model
 ]
 
@@ -77,6 +72,12 @@ FamixTSAbstractImporter >> initializeVisitorAndModelUsing: aFileReference [
 		rootFolder: (aFileReference isFile
 				 ifTrue: [ aFileReference parent ]
 				 ifFalse: [ aFileReference ]) "If we parse a folder, it will be the root. If it's just a file, we consider that the root is its parent"
+]
+
+{ #category : 'as yet unclassified' }
+FamixTSAbstractImporter >> manageErrorReport [
+
+	^ self errorReport ifNotEmpty: [ self errorReport inspect ]
 ]
 
 { #category : 'as yet unclassified' }
