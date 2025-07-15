@@ -1,0 +1,91 @@
+Class {
+	#name : 'FamixTSAbstractVisitor',
+	#superclass : 'TSVisitor',
+	#traits : 'SRTSolverUserVisitor',
+	#classTraits : 'SRTSolverUserVisitor classTrait',
+	#instVars : [
+		'fileReference',
+		'model',
+		'commentsImporter'
+	],
+	#category : 'TreeSitter-Famix-Integration',
+	#package : 'TreeSitter-Famix-Integration'
+}
+
+{ #category : 'accessing' }
+FamixTSAbstractVisitor >> fileReference [
+
+	^ fileReference
+]
+
+{ #category : 'accessing' }
+FamixTSAbstractVisitor >> fileReference: anObject [
+
+	fileReference := anObject
+]
+
+{ #category : 'initialization' }
+FamixTSAbstractVisitor >> initialize [
+
+	super initialize.
+	model := self modelClass new name: 'Default Model Name'.
+	model sourceLanguage: model newSourceLanguage.
+	self initialiseSolver
+]
+
+{ #category : 'accessing' }
+FamixTSAbstractVisitor >> model [
+
+	^ model
+]
+
+{ #category : 'accessing' }
+FamixTSAbstractVisitor >> modelClass [
+	"Should return the model class such as FamixPythonModel."
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'accessing' }
+FamixTSAbstractVisitor >> sourceText [
+
+	self flag: #todo. "Manage encorders."
+	^ self fileReference contents
+]
+
+{ #category : 'visiting' }
+FamixTSAbstractVisitor >> visit: anObject [
+
+	anObject isTSNode ifTrue: [ ^ self visitNode: anObject ].
+	anObject isCollection ifTrue: [ ^ self visitNodes: anObject ].
+	^ anObject
+]
+
+{ #category : 'visiting' }
+FamixTSAbstractVisitor >> visitChildren: aTSNode [
+
+	^ aTSNode collectNamedChild collect: [ :child | child accept: self ]
+]
+
+{ #category : 'visiting' }
+FamixTSAbstractVisitor >> visitNode: aTSNode [
+
+	^ self errorReport catch: Exception during: [
+			  | visitMethod |
+			  visitMethod := (String streamContents: [ :aStream |
+					                  aStream nextPutAll: 'visit'.
+					                  ($_ split: aTSNode type) do: [ :word | aStream nextPutAll: word capitalized ].
+					                  aStream nextPut: $: ]) asSymbol.
+
+			  (self respondsTo: visitMethod)
+				  ifTrue: [ self perform: visitMethod with: aTSNode ]
+				  ifFalse: [
+						  (visitMethod , ' does not exist, visiting only its children') traceCr.
+						  super visitNode: aTSNode ] ]
+]
+
+{ #category : 'visiting' }
+FamixTSAbstractVisitor >> visitNodes: aCollection [
+
+	^ aCollection collect: [ :node | self visit: node ]
+]
