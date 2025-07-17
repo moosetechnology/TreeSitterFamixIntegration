@@ -41,7 +41,8 @@ FamixTSAbstractVisitor >> fileReference [
 { #category : 'accessing' }
 FamixTSAbstractVisitor >> fileReference: anObject [
 
-	fileReference := anObject
+	fileReference := anObject.
+	sourceText := nil
 ]
 
 { #category : 'initialization' }

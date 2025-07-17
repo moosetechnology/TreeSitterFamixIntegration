@@ -43,6 +43,7 @@ FamixTSAbstractImporter >> importFile: aFileReference [
 
 	parser := TSParser new.
 	parser language: self treeSitterLanguage.
+
 	visitor fileReference: aFileReference.
 	tree := parser parseString: visitor sourceText.
 

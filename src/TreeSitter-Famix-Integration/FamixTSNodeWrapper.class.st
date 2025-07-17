@@ -49,7 +49,7 @@ FamixTSNodeWrapper >> collectNamedChild [
 { #category : 'accessing' }
 FamixTSNodeWrapper >> completeSource [
 
-	^ self visitor sourceText
+	^ self rootNode sourceText
 ]
 
 { #category : 'collection' }
@@ -176,7 +176,7 @@ FamixTSNodeWrapper >> printOn: aStream [
 { #category : 'accessing' }
 FamixTSNodeWrapper >> relativePath [
 
-	^ self visitor relativeFilePath
+	^ self rootNode relativePath
 ]
 
 { #category : 'accessing' }
