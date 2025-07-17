@@ -33,13 +33,13 @@ This can make it more complexe to implement some logic, expecially everything li
 
 This might be improved in the future by improving the FFI binding of TreeSitter, but in the meantime, we are proposing a wrapper for `TSNodes`.
 
-The root node of the tree can be wrapped in a `FamixTSRootNodeWrapper`. This wrapper can have two parameters set:
+The root node of the tree can be wrapped in a `FamixTSRootNodeWrapper`. This wrapper can have a visitor set to offer some utilities.
+
+If you use the `FamixTSAbstractVisitor` and the `FamixTSAbstractImporter`, it will be set automatically without you having to do anything (This happens in `FamixTSRootNode>>#accept:`).
+
+Knowing the visitor allows to enrich the API of the nodes with methods such as:
 - `completeSource` : This is the source of the file that produced this parsed tree
 - `relativePath` : This is the relative path of the file been parsed from the root `FileReference` provided by the parse
-
-If you use the `FamixTSAbstractVisitor` and the `FamixTSAbstractImporter`, those two will be set automatically without you having to do anything (This happens in `FamixTSRootNode>>#accept:`).
-
-Knowing the complete source allows to enrich the API of the nodes with methods such as:
 - `sourceText` : the source of the current node
 - `startPosition` : the start position of the node in the file
 - `endPosition` : the end position of the node in the file
