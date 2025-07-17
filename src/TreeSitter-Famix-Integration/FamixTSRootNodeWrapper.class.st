@@ -2,8 +2,7 @@ Class {
 	#name : 'FamixTSRootNodeWrapper',
 	#superclass : 'FamixTSNodeWrapper',
 	#instVars : [
-		'relativePath',
-		'completeSource'
+		'visitor'
 	],
 	#category : 'TreeSitter-Famix-Integration',
 	#package : 'TreeSitter-Famix-Integration'
@@ -12,37 +11,36 @@ Class {
 { #category : 'visiting' }
 FamixTSRootNodeWrapper >> accept: aVisitor [
 
-	self
-		relativePath: aVisitor relativeFilePath;
-		completeSource: aVisitor sourceText.
+	self visitor: aVisitor.
 	super accept: aVisitor
 ]
 
 { #category : 'accessing' }
 FamixTSRootNodeWrapper >> completeSource [
 
-	^ completeSource
-]
-
-{ #category : 'accessing' }
-FamixTSRootNodeWrapper >> completeSource: aString [
-	completeSource := aString
+	^ visitor sourceText
 ]
 
 { #category : 'accessing' }
 FamixTSRootNodeWrapper >> relativePath [
 
-	^ relativePath
-]
-
-{ #category : 'accessing' }
-FamixTSRootNodeWrapper >> relativePath: anObject [
-
-	relativePath := anObject
+	^ visitor relativeFilePath
 ]
 
 { #category : 'accessing' }
 FamixTSRootNodeWrapper >> rootNode [
 
 	^ self
+]
+
+{ #category : 'accessing' }
+FamixTSRootNodeWrapper >> visitor [
+
+	^ visitor
+]
+
+{ #category : 'accessing' }
+FamixTSRootNodeWrapper >> visitor: anObject [
+
+	visitor := anObject
 ]

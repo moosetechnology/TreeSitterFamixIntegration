@@ -6,7 +6,8 @@ Class {
 	#instVars : [
 		'fileReference',
 		'model',
-		'commentsImporter'
+		'commentsImporter',
+		'sourceText'
 	],
 	#category : 'TreeSitter-Famix-Integration',
 	#package : 'TreeSitter-Famix-Integration'
@@ -102,7 +103,7 @@ FamixTSAbstractVisitor >> setSourceAnchorTo: aFamixEntity fileName: aString star
 FamixTSAbstractVisitor >> sourceText [
 
 	self flag: #todo. "Manage encorders."
-	^ self fileReference contents
+	^ sourceText ifNil: [ sourceText := self fileReference contents ]
 ]
 
 { #category : 'visiting' }

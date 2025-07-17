@@ -46,11 +46,6 @@ FamixTSNodeWrapper >> collectNamedChild [
 	^ self collectFieldNameOfNamedChild values flattened
 ]
 
-{ #category : 'accessing' }
-FamixTSNodeWrapper >> completeSource [
-	^ self rootNode completeSource
-]
-
 { #category : 'collection' }
 FamixTSNodeWrapper >> detectNamedChild: name ifNone: aConstantBlockClosure [
 
@@ -173,12 +168,6 @@ FamixTSNodeWrapper >> printOn: aStream [
 ]
 
 { #category : 'accessing' }
-FamixTSNodeWrapper >> relativePath [
-
-	^ self rootNode relativePath
-]
-
-{ #category : 'accessing' }
 FamixTSNodeWrapper >> rootNode [
 	^ self parent rootNode
 ]
@@ -230,4 +219,9 @@ FamixTSNodeWrapper >> tsTreeExtension: builder [
 		  roots: { self };
 		  beResizable;
 		expandAll
+]
+
+{ #category : 'accessing' }
+FamixTSNodeWrapper >> visitor [
+	^ self rootNode visitor
 ]
