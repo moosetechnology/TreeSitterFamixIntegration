@@ -46,7 +46,7 @@ FamixTSAbstractImporter >> importFile: aFileReference [
 	visitor fileReference: aFileReference.
 	tree := parser parseString: visitor sourceText.
 
-	"(aFileReference basename = #'modulesReferencingThings.py') ifTrue: [ 1halt ]."
+	"(aFileReference basename = #'moduleAtRoot8.py') ifTrue: [ 1halt ]."
 
 	self flag: #todo. "A tool to list possible nodes, possible parents and possible children"
 	FamixTSRootNodeWrapper new

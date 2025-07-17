@@ -46,6 +46,12 @@ FamixTSNodeWrapper >> collectNamedChild [
 	^ self collectFieldNameOfNamedChild values flattened
 ]
 
+{ #category : 'accessing' }
+FamixTSNodeWrapper >> completeSource [
+
+	^ self visitor sourceText
+]
+
 { #category : 'collection' }
 FamixTSNodeWrapper >> detectNamedChild: name ifNone: aConstantBlockClosure [
 
@@ -165,6 +171,12 @@ FamixTSNodeWrapper >> printOn: aStream [
 
 	aStream nextPutAll: 'Wrapped: '.
 	tsNode printOn: aStream
+]
+
+{ #category : 'accessing' }
+FamixTSNodeWrapper >> relativePath [
+
+	^ self visitor relativeFilePath
 ]
 
 { #category : 'accessing' }

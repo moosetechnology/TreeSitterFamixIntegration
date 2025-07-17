@@ -16,18 +16,6 @@ FamixTSRootNodeWrapper >> accept: aVisitor [
 ]
 
 { #category : 'accessing' }
-FamixTSRootNodeWrapper >> completeSource [
-
-	^ visitor sourceText
-]
-
-{ #category : 'accessing' }
-FamixTSRootNodeWrapper >> relativePath [
-
-	^ visitor relativeFilePath
-]
-
-{ #category : 'accessing' }
 FamixTSRootNodeWrapper >> rootNode [
 
 	^ self
