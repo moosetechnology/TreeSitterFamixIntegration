@@ -25,11 +25,12 @@ Class {
 }
 
 { #category : 'instance creation' }
-FamixTSAbstractCommentsVisitor class >> visitor: aPythonImporterVisitor [
+FamixTSAbstractCommentsVisitor class >> visitor: aFamixPythonVisitor importCommentsOf: aNode [
 
 	^ self new
-		  visitor: aPythonImporterVisitor;
-		  yourself
+		  visitor: aFamixPythonVisitor;
+		  visitNode: aNode;
+		  import
 ]
 
 { #category : 'accessing' }
