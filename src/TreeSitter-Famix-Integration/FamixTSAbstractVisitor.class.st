@@ -26,7 +26,7 @@ FamixTSAbstractVisitor >> doesNotUnderstand: aMessage [
 
 	(aMessage selector beginsWith: 'visit') ifTrue: [
 			('Not implemented visit method: ' , aMessage selector) traceCr.
-			super visitNode: aMessage argument ].
+			^ super visitNode: aMessage argument ].
 
 	^ super doesNotUnderstand: aMessage
 ]
