@@ -15,12 +15,15 @@ In the different sections of this project we will present the different utilitie
   - [FamixTSAbstractVisitor](#famixtsabstractvisitor)
     - [Specialization of the visit](#specialization-of-the-visit)
     - [Visit of single/multiple fields](#visit-of-singlemultiple-fields)
-  - [Comment importer?](#comment-importer)
+  - [Comment importer helper](#comment-importer-helper)
+    - [Description](#description)
+    - [Use it in your project](#use-it-in-your-project)
   - [Error repport](#error-repport)
   - [Symbol resolution](#symbol-resolution)
   - [Context Stack building](#context-stack-building)
   - [Example of parsers written with those tools](#example-of-parsers-written-with-those-tools)
 
+<!-- /TOC -->
 <!-- /TOC -->
 
 ## FamixTSNodeWrapper and FamixTSRootNodeWrapper
@@ -115,9 +118,85 @@ TODO
 
 TODO
 
-## Comment importer?
+## Comment importer helper
 
-TODO
+My set of tools includes an utility to help with the import of comments.
+
+### Description
+
+In programming languages we have often two kinds of comments:
+- Single line comments
+- Multiline comments
+
+I propose an utility, `FamixTSAbstractCommentsVisitor` to import both kinds and attribute those comments to the right entity.
+
+Here is a little list of what I am doing:
+- If multiple single line comments are following each others and have only line return between them, I'll merge those single line comments into one entity
+- If a comment is one line before the declaration of an entity, I'll attach the comment to this entity. (Typically, we add comments before a class declaration or a method definition)
+- In a single line comment is on the same line than an entity declaration, then I'll attach it to this entity. (Typically, if we comment a variable on the line of its declaration)
+- If a comment is inside an entity, we attach it to this entity
+
+Also, it is often a bother to think about visiting all the comment nodes during the writting of the visitor. (I had multiple failed tests in an importer I did because I forgot to visit some...) In order to avoid this problem, this utility do its own visit of the tree to manage only comments! So, no need to care about comments in your main visitor. You can just skip them and do nothing when you encounter those nodes.
+
+### Use it in your project
+
+In order to use this utility, you will need to subclass `FamixTSAbstractCommentsVisitor`. For example, in my python parser I did:
+
+```st
+FamixTSAbstractCommentsVisitor << #FamixPythonCommentVisitor
+	slots: {};
+	tag: 'Importer';
+	package: 'Famix-Python-Importer'
+```
+
+Now we will need to override `#visitNode:` in order to find the nodes representing comments.
+In order to declare those comments you can use two methods:
+- `FamixTSAbstractCommentsVisitor>>#addMultilineCommentNode:` This one takes a TSNode and registers a multiline comment for it
+- `FamixTSAbstractCommentsVisitor>>#addSingleLineCommentNode:` This one takes a TSNode and registers a single line comment for it
+
+For example in my python parser I did:
+
+```st
+FamixPythonCommentVisitor >> visitNode: aTSNode
+
+  "comment nodes are single line comments"
+	aTSNode type = #comment ifTrue: [ self addSingleLineCommentNode: aTSNode ].
+
+  "String in an expression statement are a way to do multiline comments in python"
+	(aTSNode type = #string and: [ aTSNode parent type = #expression_statement ]) ifTrue: [ self addMultilineCommentNode: aTSNode ].
+
+	super visitNode: aTSNode
+```
+
+Now you will need to launch the visit and the import.
+In order to do this you will need to provide the wrapped root node to visit and your instance of `FamixTSAbstractVisitor`. This instance will be used to look for the entities to attach the comments to and to create the comments instances.
+
+For example:
+
+```st
+FamixPythonCommentVisitor visitor: self importCommentsOf: aModuleNode.
+```
+
+Now, the place where to put this code can depend on your parser. In order to find the entities that can have comment, we are using `visitor currentEntity withAllChildren`. This means that when you launch the import of comments, your current entity needs to the be one with all the children of the file that is been imported. In case you have a more tricky situation with your language, you can override `FamixTSAbstractCommentsVisitor>>#computeEntitiesInCurrentFile` in order to give another set of entities.
+
+In my python parser I decided to add the import if the first visit method we will always find: `#visitModule:`. And I call it after setting the module as a current entity.
+
+```st
+visitModule: aModuleNode
+
+  | entity |
+  "some code..."
+  entity := model newModuleNamed: self fileReference basenameWithoutExtension.
+
+  self setSourceAnchor: entity from: aModuleNode.
+
+  ^ self useCurrentEntity: entity during: [ 
+      self visitChildren: aModuleNode.
+
+      "Importing the comments of the file."
+      FamixPythonCommentVisitor visitor: self importCommentsOf: aModuleNode ]
+```
+
 
 ## Error repport
 
