@@ -216,19 +216,9 @@ Or in the case of this project:
 
 ```st
 FamixTSAbstractVisitor>>#visitNode: aTSNode
+	"Here we are performing a special visit method. If it is not implemented the #doesNotUnderstood: will call my super visitNode:. The reason we are doing this is to simplify the debugging of a visitor to not have to step over a lot of method calls..."
 
-	^ self errorReport catch: Exception during: [
-			  | visitMethod |
-			  visitMethod := (String streamContents: [ :aStream |
-					                  aStream nextPutAll: 'visit'.
-					                  ($_ split: aTSNode type) do: [ :word | aStream nextPutAll: word capitalized ].
-					                  aStream nextPut: $: ]) asSymbol.
-
-			  (self respondsTo: visitMethod)
-				  ifTrue: [ self perform: visitMethod with: aTSNode ]
-				  ifFalse: [
-						  (visitMethod , ' does not exist, visiting only its children') traceCr.
-						  super visitNode: aTSNode ] ]
+	^ self errorReport catch: Exception during: [ self perform: (self buildVisitMethodNameFor: aTSNode) with: aTSNode ]
 
 ```
 
