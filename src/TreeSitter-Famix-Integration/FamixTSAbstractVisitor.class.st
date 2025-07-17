@@ -6,7 +6,6 @@ Class {
 	#instVars : [
 		'fileReference',
 		'model',
-		'commentsImporter',
 		'sourceText'
 	],
 	#category : 'TreeSitter-Famix-Integration',
