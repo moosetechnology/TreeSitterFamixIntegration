@@ -235,7 +235,7 @@ By default, at the end of the parsing, if error happened, they will be inspected
 
 This section will describe TSSymbolsBuilderVisitor that is now part of the Pharo-Tree-Sitter project directly.
 
-It is a little visitor used to see all the symbols present in a project and explore their children and parents.
+It is a little visitor used to see all the symbols present in a project and explore their children (grouped by their fields) and parents.
 
 You can use it like this: 
 
