@@ -11,8 +11,8 @@ In the different sections of this project we will present the different utilitie
     - [Nodes description](#nodes-description)
     - [Does not understand management](#does-not-understand-management)
   - [Inspector extensions](#inspector-extensions)
-  - [FamixTSAbstractImporter](#famixtsabstractimporter)
-  - [FamixTSAbstractVisitor](#famixtsabstractvisitor)
+  - [Base importer structure](#base-importer-structure)
+  - [Base visitor structure](#base-visitor-structure)
     - [Specialization of the visit](#specialization-of-the-visit)
     - [Visit of single/multiple fields](#visit-of-singlemultiple-fields)
   - [Comment importer helper](#comment-importer-helper)
@@ -22,6 +22,9 @@ In the different sections of this project we will present the different utilitie
   - [Inspect the symbols of your project: TSSymbolsBuilderVisitor](#inspect-the-symbols-of-your-project-tssymbolsbuildervisitor)
   - [Symbol resolution](#symbol-resolution)
   - [Context Stack building](#context-stack-building)
+  - [Example of parsers written with those tools](#example-of-parsers-written-with-those-tools)
+
+<!-- /TOC -->
   - [Example of parsers written with those tools](#example-of-parsers-written-with-those-tools)
 
 <!-- /TOC -->
@@ -104,11 +107,88 @@ An inspector to see the source code of a node inside the complete source of the 
 
 Future inspectors might come. For example I would like an inspector tab to be able to see all the possible symbols of a project, and if possible, the possible parent/children symbols. (But days are only 24h long :'( )
 
-## FamixTSAbstractImporter
+## Base importer structure
 
-TODO
+The project is providing the base to build an importer with the class `FamixTSAbstractImporter`.
+
+You can start your infrastructure by subclassing it. For example, in a python importer:
+
+```st
+FamixTSAbstractImporter << #FamixPythonImporter
+	slots: { #rootPackagePath . #filesToIgnoreBlock }; #Those two variables are specific to the python importer
+	tag: 'Importer';
+	package: 'Famix-Python-Importer'
+```
+
+Then you will need to define the TreeSitter language to use in this importer by overriding `FamixTSAbstractImporter>>#treeSitterLanguage`.
+
+```st
+FamixPythonImporter >> treeSitterLanguage
+
+	^ TSLanguage python
+```
+
+Then you need to define the visitor class to use (See section [Base visitor structure](#base-visitor-structure)). You can do it by overriding `FamixTSAbstractImporter>>#visitorClass`:
+
+```st
+FamixPythonImporter >> visitorClass
+
+	^ FamixPythonVisitor
+```
+
+This importer comes with a method `#import:` taking a file reference as parameter (the file reference is a file to parse or the folder of a project), and doing multiple things:
+- It initializes the visitor
+- It creates a new model
+- It launch the visit and parsing of the files
+- It launches the symbol resolution of the symbols registered by the SymbolResolver (See section [Symbol resolution](#symbol-resolution))
+- It deals with the errors detected during the parsing (we will explain more in this later in this section)
+- And it finaly returns the created Famix model
+
+The third step is done via `FamixTSAbstractImporter>>#importFileReference:` but this method is abstract and needs to be reimplemented because it will be specific to each langage. For example in python we can have normal folders, folders representing a package, files representing a package and files representing a module, file that is not a python file...
+So we need to manage ourself the visit of the folders and files. When we have a file that we need to parse, we can then call `FamixTSAbstractImporter>>#importFile:` that will manage the parsing and visit of the file.
+
+For example in python:
+
+```st
+FamixPythonImporter >> importFileReference: aFileReference
+	"We can have multiple cases here. 
+	
+	The file reference can be a directory or a file. 
+	
+	If it is a directory, we check if it contains .py files to know if it is a folder or a package. If it is a package, we create the entity and visit its content.
+	If it is a file, we parse it if it is a python file.
+	"
+
+	aFileReference isDirectory ifTrue: [
+			(aFileReference allFiles anySatisfy: [ :file | file isPythonFile ]) ifTrue: [
+					| package |
+					package := visitor model newPackageNamed: aFileReference basename.
+					visitor withCurrentEntityDo: [ :entity | package parentPackage: entity ].
+					visitor
+						useCurrentEntity: package
+						during: [ "If we have an __init__.py file, this is a package. To have it at the top of the context we need to parse it first so that the sub packages and modules go in it."
+								(aFileReference children sorted: [ :fileA :fileB | fileA isPythonPackageDeclaration or: [ fileB isPythonPackageDeclaration not ] ]) ifNotEmpty: [ :files |
+									files do: [ :child | self importFileReference: child ] ] ] ].
+
+			^ self ].
+
+	aFileReference isPythonFile ifFalse: [ ^ self ].
+
+	self importFile: aFileReference
+```
+
+Now your importer is ready to be used (once the visitor will be working ;) ). But there is a last thing you can configure!
+
+The project comes with a system of error catching to not fail in the visitor or the symbol resolver has a problem (See [Error repport](#error-repport)). In the end of the import, you need to decide what to do with this error report. 
+By default we inspect it to ease the development. But in production you might want to do something else. In that case you need to override `FamixTSAbstractImporter>>#manageErrorReport` whose default implementation is:
+
+```st
+manageErrorReport
+
+	^ self errorReport ifNotEmpty: [ self errorReport inspect ]
+```
  
-## FamixTSAbstractVisitor
+## Base visitor structure
 
 TODO
 
