@@ -14,7 +14,9 @@ In the different sections of this project we will present the different utilitie
   - [Base importer structure](#base-importer-structure)
   - [Base visitor structure](#base-visitor-structure)
     - [Specialization of the visit](#specialization-of-the-visit)
-    - [Visit of single/multiple fields](#visit-of-singlemultiple-fields)
+    - [Visit of single/multiple nodes](#visit-of-singlemultiple-nodes)
+    - [Source anchor creation utility](#source-anchor-creation-utility)
+    - [Other utilities](#other-utilities)
   - [Comment importer helper](#comment-importer-helper)
     - [Description](#description)
     - [Use it in your project](#use-it-in-your-project)
@@ -24,6 +26,7 @@ In the different sections of this project we will present the different utilitie
   - [Context Stack building](#context-stack-building)
   - [Example of parsers written with those tools](#example-of-parsers-written-with-those-tools)
 
+<!-- /TOC -->
 <!-- /TOC -->
   - [Example of parsers written with those tools](#example-of-parsers-written-with-those-tools)
 
@@ -115,7 +118,7 @@ You can start your infrastructure by subclassing it. For example, in a python im
 
 ```st
 FamixTSAbstractImporter << #FamixPythonImporter
-	slots: { #rootPackagePath . #filesToIgnoreBlock }; #Those two variables are specific to the python importer
+	slots: { #rootPackagePath . #filesToIgnoreBlock }; "Those two variables are specific to the python importer"
 	tag: 'Importer';
 	package: 'Famix-Python-Importer'
 ```
@@ -143,6 +146,8 @@ This importer comes with a method `#import:` taking a file reference as paramete
 - It launches the symbol resolution of the symbols registered by the SymbolResolver (See section [Symbol resolution](#symbol-resolution))
 - It deals with the errors detected during the parsing (we will explain more in this later in this section)
 - And it finaly returns the created Famix model
+
+The second step will take care of some things such as setting the root folder or source language of the model.
 
 The third step is done via `FamixTSAbstractImporter>>#importFileReference:` but this method is abstract and needs to be reimplemented because it will be specific to each langage. For example in python we can have normal folders, folders representing a package, files representing a package and files representing a module, file that is not a python file...
 So we need to manage ourself the visit of the folders and files. When we have a file that we need to parse, we can then call `FamixTSAbstractImporter>>#importFile:` that will manage the parsing and visit of the file.
@@ -190,15 +195,136 @@ manageErrorReport
  
 ## Base visitor structure
 
-TODO
+On top of a basic structure for the importer, we also provide a basic visitor infrastructure.
+
+In order to use it, you will need to subclass `FamixTSAbstractVisitor`. For example:
+
+```st
+FamixTSAbstractVisitor << #FamixPythonVisitor
+	slots: { #importPaths }; "Variable specific to python"
+	tag: 'Visitors';
+	package: 'Famix-Python-Importer'
+```
+
+Then you need to use this class in your importer by overriding `FamixTSAbstractImporter>>#visitorClass`.
+
+Then you will need to visit your nodes in order to build your Famix model. The visitor comes with a few utilities to help you with that. 
 
 ### Specialization of the visit
 
-TODO
+In Tree Sitter we have only one kind of nodes, `TSNode`. This does not help to build a nice visitor. So, this project provides help with this!
 
-### Visit of single/multiple fields
+The method `#visitNodes:` is overriden in `FamixTSAbstractVisitor` in order to call a visit method infered from the type of the node. 
+For example, when `#visitNode:` will be called on a `TSNode` whose type is `class_definition`, then it will try to call `#visitClassDefinition:`. If the method exists, it will be executed. If it doen not exist, it will leave a log in the Transcript and it will call the super version of `#visitNodes:` that will just visit the children.
 
-TODO
+So we can implement methods like:
+
+```st
+visitClassDefinition: aClassDefinitionNode
+
+	| class name |
+	name := aClassDefinitionNode _name sourceText. "No need to visit. It will always be an identifier and this identifier do not need symbol resolution."
+
+	self checkShadowingOfName: name during: [
+			class := (self isMetaclassDefinition: aClassDefinitionNode)
+				         ifTrue: [ model newMetaclassNamed: name ]
+				         ifFalse: [ model newClassNamed: name ] ].
+
+	class typeContainer: self currentEntity.
+
+	self setSourceAnchor: class from: aClassDefinitionNode.
+
+	^ self useCurrentEntity: class during: [
+			  self setSuperclassesOf: aClassDefinitionNode.
+			  self setMetaclassOf: aClassDefinitionNode.
+			  self visit: aClassDefinitionNode _body ]
+```
+
+Also, since we overrided `#visitNode:` in the abstract class, it is not possible anymore to do `super visitNode: aTSNode` in our visit method in order to visit the children. We provided the method `#visitChildren:` in order to still be able to do that. 
+
+Example:
+
+```st
+visitCall: aCallNode
+
+	self resolveInvocationOrInstantiationFrom: aCallNode.
+
+	^ self visitChildren: aCallNode
+```
+
+### Visit of single/multiple nodes
+
+While using the fields of a node in a visit method, it can become quite complexe because depending on what is parsed, a field can have 3 states:
+- The field returns a single node
+- The field returns a collection of nodes
+- The field is not present
+
+In order to avoid a lot of conditions, a visit method is provided to manage all those cases: `#visit:`. The implementation is like this:
+
+```st
+visit: anObject
+
+	anObject isTSNode ifTrue: [ ^ self visitNode: anObject ].
+	anObject isCollection ifTrue: [ ^ self visitNodes: anObject ].
+	^ anObject
+```
+
+Going along with:
+
+```st
+visitNodes: aCollection
+
+	^ aCollection collect: [ :node | self visit: node ]
+```
+
+So, if you access a field like this: `self visit: aTSNode _superclasses` you can have 3 possible cases:
+- The field does not exist, `_superclasses` will return nil, and the visit will return nil
+- The field returns a single node, we visit it and return the result of the visit
+- The field returns a collection of noder, we visit them all and return a collection of the result of the visits
+
+This should reduce the complexity of you code quite a lot. For example:
+
+```st
+visitFunctionDefinition: aFunctionDefinition
+	"the parser does not make a difference between function and method, but a method is defined in a class and its first parameter is self."
+
+	| entity |
+	entity := self currentEntity isClass
+		          ifTrue: [ self ensureMethod: aFunctionDefinition ]
+		          ifFalse: [ self createFunction: aFunctionDefinition ].
+
+	^ self useCurrentEntity: entity during: [
+			  self visit: aFunctionDefinition _parameters.
+			  self visit: aFunctionDefinition _body ]
+```
+
+### Source anchor creation utility
+
+Another utility provided is a way to easily create a source anchor. For this, you will just need the Famix entity and the TSNode associated. The creation can be done using `FamixTSAbstractVisitor>>#setSourceAnchor:from:`.
+
+Example:
+
+```st
+createWriteAccessTo: variable from: anAssignmentNode
+
+	| access |
+	access := model newAccess
+		          variable: variable;
+		          accessor: self currentEntity;
+		          isWrite: true;
+		          yourself.
+	self setSourceAnchor: access from: anAssignmentNode
+```
+
+### Other utilities
+
+Other little things can make your like easier.
+
+For example:
+- The visitor knows the file reference been parsed with `#fileReference`.
+- It knows the sources that produced the `TSTree` with `#sourceText`.
+- It knows also the model in which we need to create the entities with `#model`.
+- It knows the relative path to the file that produced the tree from the root folder with `#relativePath`.
 
 ## Comment importer helper
 
@@ -259,7 +385,7 @@ For example:
 FamixPythonCommentVisitor visitor: self importCommentsOf: aModuleNode.
 ```
 
-Now, the place where to put this code can depend on your parser. In order to find the entities that can have comment, we are using `visitor currentEntity withAllChildren`. This means that when you launch the import of comments, your current entity needs to the be one with all the children of the file that is been imported. In case you have a more tricky situation with your language, you can override `FamixTSAbstractCommentsVisitor>>#computeEntitiesInCurrentFile` in order to give another set of entities.
+Now, the place where to put this code can depend on your parser. It needs to be done after visiting the model to create all entities. In order to find the entities that can have comment, we are using `visitor currentEntity withAllChildren`. This means that when you launch the import of comments, your current entity needs to the be one with all the children of the file that is been imported. In case you have a more tricky situation with your language, you can override `FamixTSAbstractCommentsVisitor>>#computeEntitiesInCurrentFile` in order to give another set of entities.
 
 In my python parser I decided to add the import if the first visit method we will always find: `#visitModule:`. And I call it after setting the module as a current entity.
 
