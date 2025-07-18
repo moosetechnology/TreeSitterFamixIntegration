@@ -49,7 +49,7 @@ FamixTSNodeWrapper >> collectNamedChild [
 { #category : 'accessing' }
 FamixTSNodeWrapper >> completeSource [
 
-	^ self rootNode sourceText
+	^ self rootNode completeSource
 ]
 
 { #category : 'collection' }
