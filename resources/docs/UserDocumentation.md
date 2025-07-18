@@ -19,10 +19,12 @@ In the different sections of this project we will present the different utilitie
     - [Description](#description)
     - [Use it in your project](#use-it-in-your-project)
   - [Error repport](#error-repport)
+  - [Inspect the symbols of your project: TSSymbolsBuilderVisitor](#inspect-the-symbols-of-your-project-tssymbolsbuildervisitor)
   - [Symbol resolution](#symbol-resolution)
   - [Context Stack building](#context-stack-building)
   - [Example of parsers written with those tools](#example-of-parsers-written-with-those-tools)
 
+<!-- /TOC -->
 <!-- /TOC -->
 <!-- /TOC -->
 
@@ -229,6 +231,24 @@ By default, at the end of the parsing, if error happened, they will be inspected
 > [!TIP]
 > While developping a parser it might be interesting to have an actual debugger instead of catching all the errors. It is possible to go in development mode via the world menu: `Debug > Toggle Symbol Resolver Debug mode`
 
+## Inspect the symbols of your project: TSSymbolsBuilderVisitor
+
+This section will describe TSSymbolsBuilderVisitor that is now part of the Pharo-Tree-Sitter project directly.
+
+It is a little visitor used to see all the symbols present in a project and explore their children and parents.
+
+You can use it like this: 
+
+```st
+	folder := FamixPythonBridge parsingExamples / 'project1'.
+	TSSymbolsBuilderVisitor language: TSLanguage python extensions: #( 'py' ) buildOn: folder
+```
+
+And you will get a result like this: 
+
+![Inspector](inspector.png)
+
+> Note: Be careful, you are not guarantee to have all possible child and parents since it will produce the mapping from what it encounters in the files you will provide. To be more accurate, give it the maximum number of sources possible.
 
 ## Symbol resolution
 
