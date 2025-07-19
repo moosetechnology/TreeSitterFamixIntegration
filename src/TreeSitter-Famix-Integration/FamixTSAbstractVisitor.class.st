@@ -94,7 +94,7 @@ FamixTSAbstractVisitor >> setSourceAnchorTo: aFamixEntity fileName: aString star
 			 mooseModel: self model;
 			 yourself).
 
-	(aFamixEntity class includesTrait: FamixTCanBeStub) ifTrue: [ aFamixEntity isStub: false ].
+	(aFamixEntity isOfType: FamixTCanBeStub) ifTrue: [ aFamixEntity isStub: false ].
 
 	^ aFamixEntity
 ]
