@@ -481,6 +481,8 @@ FamixTSDebugVisitor pythonStopIf: [ :aNode | aNode type = #concatenated_string a
 
 Then it will stop on the first node matching the block.
 
+![Debug visitor](debugvisitor.png)
+
 
 ## Symbol resolution
 
