@@ -22,6 +22,7 @@ In the different sections of this project we will present the different utilitie
 		- [Use it in your project](#use-it-in-your-project)
 	- [Error repport](#error-repport)
 	- [Inspect the symbols of your project: TSSymbolsBuilderVisitor](#inspect-the-symbols-of-your-project-tssymbolsbuildervisitor)
+	- [Find a node matching a pattern with the FamixTSDebugVisitor](#find-a-node-matching-a-pattern-with-the-famixtsdebugvisitor)
 	- [Symbol resolution](#symbol-resolution)
 	- [Context Stack building](#context-stack-building)
 	- [Example of parsers written with those tools](#example-of-parsers-written-with-those-tools)
@@ -454,6 +455,32 @@ And you will get a result like this:
 ![Inspector](inspector.png)
 
 > Note: Be careful, you are not guarantee to have all possible child and parents since it will produce the mapping from what it encounters in the files you will provide. To be more accurate, give it the maximum number of sources possible.
+
+## Find a node matching a pattern with the FamixTSDebugVisitor
+
+In some cases we know that a type of node can be in another type for example, but we don't really know in which case it happens. 
+In that case the `FamixTSDebugVisitor` can be used. 
+
+You can configure it with a language, a stop block and a folder to parse and it will stop on the first node matching the stop block.
+
+Here is a example: in Python I want to find an attribute that has a concatenized string inside:
+
+```st
+folder := FamixPythonBridge parsingExamples / 'project1'.
+
+FamixTSDebugVisitor language: TSLanguage python extensions: #( 'py' ) stopIf: [ :aNode | aNode type = #concatenated_string and: [ aNode parent type = #attribute ] ]  visit: folder
+```
+
+Or with some suggar:
+
+```st
+folder := FamixPythonBridge parsingExamples / 'project1'.
+
+FamixTSDebugVisitor pythonStopIf: [ :aNode | aNode type = #concatenated_string and: [ aNode parent type = #attribute ] ]  visit: folder
+```
+
+Then it will stop on the first node matching the block.
+
 
 ## Symbol resolution
 
