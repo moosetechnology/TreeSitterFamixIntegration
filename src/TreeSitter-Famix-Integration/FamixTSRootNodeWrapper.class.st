@@ -1,3 +1,6 @@
+"
+Compared to my superclass, I represent a root node, parent of every nodes after parsing a file.
+"
 Class {
 	#name : 'FamixTSRootNodeWrapper',
 	#superclass : 'FamixTSNodeWrapper',
@@ -6,8 +9,9 @@ Class {
 		'completeSource',
 		'relativePath'
 	],
-	#category : 'TreeSitter-Famix-Integration',
-	#package : 'TreeSitter-Famix-Integration'
+	#category : 'TreeSitter-Famix-Integration-Wrappers',
+	#package : 'TreeSitter-Famix-Integration',
+	#tag : 'Wrappers'
 }
 
 { #category : 'visiting' }

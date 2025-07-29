@@ -1,11 +1,15 @@
+"
+I am the base structure to write a Famix importer based on TreeSitter. Check the documentation on github for more info.
+"
 Class {
 	#name : 'FamixTSAbstractImporter',
 	#superclass : 'Object',
 	#instVars : [
 		'visitor'
 	],
-	#category : 'TreeSitter-Famix-Integration',
-	#package : 'TreeSitter-Famix-Integration'
+	#category : 'TreeSitter-Famix-Integration-Core',
+	#package : 'TreeSitter-Famix-Integration',
+	#tag : 'Core'
 }
 
 { #category : 'accessing' }

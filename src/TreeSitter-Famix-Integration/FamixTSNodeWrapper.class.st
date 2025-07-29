@@ -1,3 +1,6 @@
+"
+I am a wrapper of TSNodes to access more info and keep the children/parents of each nodes. Check the github documentation for more info.
+"
 Class {
 	#name : 'FamixTSNodeWrapper',
 	#superclass : 'Object',
@@ -6,8 +9,9 @@ Class {
 		'parent',
 		'children'
 	],
-	#category : 'TreeSitter-Famix-Integration',
-	#package : 'TreeSitter-Famix-Integration'
+	#category : 'TreeSitter-Famix-Integration-Wrappers',
+	#package : 'TreeSitter-Famix-Integration',
+	#tag : 'Wrappers'
 }
 
 { #category : 'visiting' }

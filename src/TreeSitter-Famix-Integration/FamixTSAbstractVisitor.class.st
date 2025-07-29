@@ -1,3 +1,6 @@
+"
+I am the base structure to write a Famix visitor based on TreeSitter. Check the documentation on github for more info.
+"
 Class {
 	#name : 'FamixTSAbstractVisitor',
 	#superclass : 'TSVisitor',
@@ -8,8 +11,9 @@ Class {
 		'model',
 		'sourceText'
 	],
-	#category : 'TreeSitter-Famix-Integration',
-	#package : 'TreeSitter-Famix-Integration'
+	#category : 'TreeSitter-Famix-Integration-Core',
+	#package : 'TreeSitter-Famix-Integration',
+	#tag : 'Core'
 }
 
 { #category : 'private' }

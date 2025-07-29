@@ -20,8 +20,9 @@ Class {
 		'singleLineIntervals',
 		'multilineIntervals'
 	],
-	#category : 'TreeSitter-Famix-Integration',
-	#package : 'TreeSitter-Famix-Integration'
+	#category : 'TreeSitter-Famix-Integration-Core',
+	#package : 'TreeSitter-Famix-Integration',
+	#tag : 'Core'
 }
 
 { #category : 'instance creation' }
