@@ -111,12 +111,26 @@ FamixTSNodeWrapper >> fullSourceInspectorExtension: aBuilder [
 
 { #category : 'testing' }
 FamixTSNodeWrapper >> includesChild: aNode [
+	"Return true if I includes the parameter in my chlidren recursively."
 
 	self = aNode ifTrue: [ ^ true ].
 	^ self collectNamedChild
 		  detect: [ :node | node = aNode or: [ node includesChild: aNode ] ]
 		  ifFound: [ :node | true ]
 		  ifNone: [ false ]
+]
+
+{ #category : 'testing' }
+FamixTSNodeWrapper >> isInField: aName ofParentOfType: aType [
+	"Return true if I have a parent of the type `aType` recursively, and I am in the field `aName` of this node recursively.
+	
+	Exemple: `aNode isInField: #body ofParentOfType: #list_comprehension
+	
+	It will return true if the node is in the field body of a list comprehension. "
+
+	self parentsDo: [ :node |
+		node type = aType ifTrue: [ ^ node nodeChildByFieldName: aName ifPresent: [ :field | field includesChild: self ] ifAbsent: [ false ] ] ].
+	^ false
 ]
 
 { #category : 'testing' }
