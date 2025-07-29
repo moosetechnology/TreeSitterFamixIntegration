@@ -7,32 +7,26 @@ In the different sections of this project we will present the different utilitie
 <!-- TOC -->
 
 - [User documentation of Tree Sitter Famix Integration](#user-documentation-of-tree-sitter-famix-integration)
-  - [FamixTSNodeWrapper and FamixTSRootNodeWrapper](#famixtsnodewrapper-and-famixtsrootnodewrapper)
-    - [Nodes description](#nodes-description)
-    - [Does not understand management](#does-not-understand-management)
-  - [Inspector extensions](#inspector-extensions)
-  - [Base importer structure](#base-importer-structure)
-  - [Base visitor structure](#base-visitor-structure)
-    - [Specialization of the visit](#specialization-of-the-visit)
-    - [Visit of single/multiple nodes](#visit-of-singlemultiple-nodes)
-    - [Source anchor creation utility](#source-anchor-creation-utility)
-    - [Other utilities](#other-utilities)
-  - [Comment importer helper](#comment-importer-helper)
-    - [Description](#description)
-    - [Use it in your project](#use-it-in-your-project)
-  - [Error repport](#error-repport)
-  - [Inspect the symbols of your project: TSSymbolsBuilderVisitor](#inspect-the-symbols-of-your-project-tssymbolsbuildervisitor)
-  - [Symbol resolution](#symbol-resolution)
-  - [Context Stack building](#context-stack-building)
-  - [Example of parsers written with those tools](#example-of-parsers-written-with-those-tools)
+	- [FamixTSNodeWrapper and FamixTSRootNodeWrapper](#famixtsnodewrapper-and-famixtsrootnodewrapper)
+		- [Nodes description](#nodes-description)
+		- [Does not understand management](#does-not-understand-management)
+	- [Inspector extensions](#inspector-extensions)
+	- [Base importer structure](#base-importer-structure)
+	- [Base visitor structure](#base-visitor-structure)
+		- [Specialization of the visit](#specialization-of-the-visit)
+		- [Visit of single/multiple nodes](#visit-of-singlemultiple-nodes)
+		- [Source anchor creation utility](#source-anchor-creation-utility)
+		- [Other utilities](#other-utilities)
+	- [Comment importer helper](#comment-importer-helper)
+		- [Description](#description)
+		- [Use it in your project](#use-it-in-your-project)
+	- [Error repport](#error-repport)
+	- [Inspect the symbols of your project: TSSymbolsBuilderVisitor](#inspect-the-symbols-of-your-project-tssymbolsbuildervisitor)
+	- [Symbol resolution](#symbol-resolution)
+	- [Context Stack building](#context-stack-building)
+	- [Example of parsers written with those tools](#example-of-parsers-written-with-those-tools)
 
-<!-- /TOC -->
-<!-- /TOC -->
-  - [Example of parsers written with those tools](#example-of-parsers-written-with-those-tools)
-
-<!-- /TOC -->
-<!-- /TOC -->
-<!-- /TOC -->
+<!-- TOC -->
 
 ## FamixTSNodeWrapper and FamixTSRootNodeWrapper
 
@@ -58,6 +52,11 @@ Knowing the visitor allows to enrich the API of the nodes with methods such as:
 They will be especially helpful to produce the file references of model to produce. But we will explore this in a future section about the `FamixTSAbstractVisitor`.
 
 `FamixTSRootNodeWrapper` will produce instances of `FamixTSNodeWrapper` once we ask its children. Both those classes reimplement the methods to get the parents or children nodes in order to save the instances and not recreate new instances each time we request them. This allows to access the sources without losing this info.
+
+Those nodes also comes with some helper methods that can be useful during the development of a parser such as:
+- `#includesChild:` Returns true if I contain the parameter in my children recursively. For example: `aNode includesChild: anIdentifierNode`
+- `#isInField:ofParentOfType:` Returns true if the node is in the field named like the first parameter of a node of the kind of the second parameter. For example: `aNode isInField: #body ofParentOfType: #list_comprehension`.
+- `#parentsDo:` Iterate over each parents recursively and execute the block as parameter
 
 ### Does not understand management
 
