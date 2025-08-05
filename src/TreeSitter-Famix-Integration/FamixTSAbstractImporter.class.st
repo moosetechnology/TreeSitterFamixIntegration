@@ -36,7 +36,7 @@ FamixTSAbstractImporter >> import: aFileReference [
 	self importFileReference: fileReference.
 	visitor resolveUnresolvedSymbols.
 	self manageErrorReport.
-	^ visitor model
+	^ self model
 ]
 
 { #category : 'accessing' }
@@ -72,7 +72,7 @@ FamixTSAbstractImporter >> initializeVisitorAndModelUsing: aFileReference [
 
 	visitor := self visitorClass new.
 
-	visitor model
+	self model
 		name: aFileReference basename;
 		rootFolder: (aFileReference isFile
 				 ifTrue: [ aFileReference parent ]
@@ -83,6 +83,12 @@ FamixTSAbstractImporter >> initializeVisitorAndModelUsing: aFileReference [
 FamixTSAbstractImporter >> manageErrorReport [
 
 	^ self errorReport ifNotEmpty: [ self errorReport inspect ]
+]
+
+{ #category : 'accessing' }
+FamixTSAbstractImporter >> model [
+
+	^ visitor model
 ]
 
 { #category : 'as yet unclassified' }
