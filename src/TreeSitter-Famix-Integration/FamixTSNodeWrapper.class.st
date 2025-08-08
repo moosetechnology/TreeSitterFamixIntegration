@@ -176,6 +176,14 @@ FamixTSNodeWrapper >> parent: anObject [
 	parent := anObject
 ]
 
+{ #category : 'accessing' }
+FamixTSNodeWrapper >> parentOfType: aSymbol [
+
+	self parentsDo: [ :node | node type = aSymbol ifTrue: [ ^ node ] ].
+
+	^ nil
+]
+
 { #category : 'enumerating' }
 FamixTSNodeWrapper >> parentsDo: aBlock [
 
