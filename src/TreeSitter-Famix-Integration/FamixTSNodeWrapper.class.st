@@ -133,7 +133,14 @@ FamixTSNodeWrapper >> isInField: aName ofParentOfType: aType [
 	It will return true if the node is in the field body of a list comprehension. "
 
 	self parentsDo: [ :node |
-		node type = aType ifTrue: [ ^ node nodeChildByFieldName: aName ifPresent: [ :field | field includesChild: self ] ifAbsent: [ false ] ] ].
+			node type = aType ifTrue: [
+					^ node
+						  nodeChildByFieldName: aName
+						  ifPresent: [ :field |
+								  field isCollection
+									  ifTrue: [ field anySatisfy: [ :f | f includesChild: self ] ]
+									  ifFalse: [ field includesChild: self ] ]
+						  ifAbsent: [ false ] ] ].
 	^ false
 ]
 
