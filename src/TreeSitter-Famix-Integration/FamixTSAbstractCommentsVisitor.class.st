@@ -50,7 +50,7 @@ FamixTSAbstractCommentsVisitor >> addSingleLineCommentNode: aNode [
 FamixTSAbstractCommentsVisitor >> computeEntitiesInCurrentFile [
 	"This is a generic implementation but it can be overriden"
 
-	^ visitor currentEntity withAllChildren
+	^ visitor currentEntity withAllContainedEntities
 ]
 
 { #category : 'actions' }
