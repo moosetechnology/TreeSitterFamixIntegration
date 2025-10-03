@@ -159,8 +159,11 @@ FamixTSAbstractCommentsVisitor >> import [
 FamixTSAbstractCommentsVisitor >> initialize [
 
 	super initialize.
-	singleLineIntervals := OrderedCollection new.
-	multilineIntervals := OrderedCollection new
+	
+	"It happens that we have comments in a random order but we need to be sure they are in the order of the file in order for our algos to work well.
+	So we sort them by their start position in the file."
+	singleLineIntervals := SortedCollection sortUsing: #first ascending.
+	multilineIntervals := SortedCollection sortUsing: #first ascending
 ]
 
 { #category : 'accessing' }
