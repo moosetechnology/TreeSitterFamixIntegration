@@ -12,6 +12,7 @@ In the different sections of this project we will present the different utilitie
 		- [Does not understand management](#does-not-understand-management)
 	- [Inspector extensions](#inspector-extensions)
 	- [Base importer structure](#base-importer-structure)
+		- [Model creation optimization](#model-creation-optimization)
 	- [Base visitor structure](#base-visitor-structure)
 		- [Specialization of the visit](#specialization-of-the-visit)
 		- [Visit of single/multiple nodes](#visit-of-singlemultiple-nodes)
@@ -193,6 +194,20 @@ manageErrorReport
 	^ self errorReport ifNotEmpty: [ self errorReport inspect ]
 ```
  
+> Note: It is also possible to add some behavior before the import of the root folder by overriding the `#preparsingHook` method if you need.
+
+### Model creation optimization
+
+By default in Moose if we add two times an entity to a collection (for example if we add 2 times a method to a class), the collection check if the entity is already present to avoid duplicated elements.
+This feature takes some time and it is possible to disable it and the importer is disabling it by default to save some import time.
+
+If your visitor can add multiple time the same entity to a collection, then you should enable this check again by overriding `#shouldCheckForDuplicatedEntitiesInCollections` in the importer.
+
+```st
+FamixXXXImporter>> shouldCheckForDuplicatedEntitiesInCollections
+	^ true
+```
+
 ## Base visitor structure
 
 On top of a basic structure for the importer, we also provide a basic visitor infrastructure.

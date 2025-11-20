@@ -5,6 +5,7 @@ Class {
 	#name : 'FamixTSAbstractImporter',
 	#superclass : 'Object',
 	#instVars : [
+		'rootReference',
 		'visitor'
 	],
 	#category : 'TreeSitter-Famix-Integration-Core',
@@ -26,20 +27,27 @@ FamixTSAbstractImporter >> errorReport [
 	^ visitor errorReport
 ]
 
-{ #category : 'accessing' }
+{ #category : 'importing' }
 FamixTSAbstractImporter >> import: aFileReference [
 
-	| fileReference |
-	"In case the user provided a file name instead of a file reference.""We should probably handle it another way in production."
-	fileReference := aFileReference asFileReference.
-	self initializeVisitorAndModelUsing: fileReference.
-	self importFileReference: fileReference.
-	visitor resolveUnresolvedSymbols.
+	rootReference := aFileReference asFileReference. "In case the user provided a file name instead of a file reference."
+
+	self initializeVisitorAndModel.
+
+	"See comment of #shouldCheckForDuplicatedEntitiesInCollections"
+	FMShouldCheckForDuplicatedEntitiesInMultivalueLinks value: self shouldCheckForDuplicatedEntitiesInCollections during: [
+			self preparsingHook.
+
+			self importFileReference: rootReference.
+
+			visitor resolveUnresolvedSymbols ].
+
 	self manageErrorReport.
+
 	^ self model
 ]
 
-{ #category : 'accessing' }
+{ #category : 'importing' }
 FamixTSAbstractImporter >> importFile: aFileReference [
 
 	| parser tree |
@@ -59,7 +67,7 @@ FamixTSAbstractImporter >> importFile: aFileReference [
 		accept: visitor
 ]
 
-{ #category : 'accessing' }
+{ #category : 'importing' }
 FamixTSAbstractImporter >> importFileReference: aFileReference [
 	"This will depend on the language we are parsing.
 	This should call #importFile: when the file reference is a file."
@@ -67,19 +75,19 @@ FamixTSAbstractImporter >> importFileReference: aFileReference [
 	self subclassResponsibility
 ]
 
-{ #category : 'as yet unclassified' }
-FamixTSAbstractImporter >> initializeVisitorAndModelUsing: aFileReference [
+{ #category : 'initialization' }
+FamixTSAbstractImporter >> initializeVisitorAndModel [
 
 	visitor := self visitorClass new.
 
 	self model
-		name: aFileReference basename;
-		rootFolder: (aFileReference isFile
-				 ifTrue: [ aFileReference parent ]
-				 ifFalse: [ aFileReference ]) "If we parse a folder, it will be the root. If it's just a file, we consider that the root is its parent"
+		name: rootReference basename;
+		rootFolder: (rootReference isFile
+				 ifTrue: [ rootReference parent ]
+				 ifFalse: [ rootReference ]) "If we parse a folder, it will be the root. If it's just a file, we consider that the root is its parent"
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'importing' }
 FamixTSAbstractImporter >> manageErrorReport [
 
 	^ self errorReport ifNotEmpty: [ self errorReport inspect ]
@@ -91,7 +99,22 @@ FamixTSAbstractImporter >> model [
 	^ visitor model
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'importing' }
+FamixTSAbstractImporter >> preparsingHook [
+	"Do nothing by default but this can be useful for some importers."
+
+	
+]
+
+{ #category : 'asserting' }
+FamixTSAbstractImporter >> shouldCheckForDuplicatedEntitiesInCollections [
+	"If I return true, them all FMMany slots of the MooseModel will ensure that each entity added is be unique in collections. 
+	But most parsers should not add duplicated elements. So I'm disabling this check by default for performance reasons."
+
+	^ false
+]
+
+{ #category : 'accessing' }
 FamixTSAbstractImporter >> treeSitterLanguage [
 	"Should return a TreeSitter language such as  TSLanguage python"
 
