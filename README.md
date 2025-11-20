@@ -26,3 +26,8 @@ Note that you can replace the #master by another branch such as #development or 
 ## Documentation 
 
 Full documentation available at: [User documentation](resources/docs/UserDocumentation.md)
+
+## Testing
+
+This project is not easy to test by itself so the testing is not happening here for real. 
+I am trying to test all parts of this project as part of the [Moose Python importer](https://github.com/moosetechnology/MoosePy).
