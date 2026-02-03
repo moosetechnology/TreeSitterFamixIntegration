@@ -57,11 +57,10 @@ FamixTSAbstractImporter >> importFile: aFileReference [
 	parser language: self treeSitterLanguage.
 
 	visitor fileReference: aFileReference.
-	tree := parser parseString: visitor sourceText.
+	tree := parser parseString: visitor sourceText usingTree:  ExternalAddress null  encoding: visitor treeSitterEncoding.
 
 	"(aFileReference basename = #'moduleAtRoot8.py') ifTrue: [ 1halt ]."
 
-	self flag: #todo. "A tool to list possible nodes, possible parents and possible children"
 	FamixTSRootNodeWrapper new
 		tsNode: tree rootNode;
 		accept: visitor

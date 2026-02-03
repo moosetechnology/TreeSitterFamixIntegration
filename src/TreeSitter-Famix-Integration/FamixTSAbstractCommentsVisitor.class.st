@@ -46,7 +46,7 @@ FamixTSAbstractCommentsVisitor >> addSingleLineCommentNode: aNode [
 	singleLineIntervals add: (self intervalOf: aNode)
 ]
 
-{ #category : 'as yet unclassified' }
+{ #category : 'actions' }
 FamixTSAbstractCommentsVisitor >> computeEntitiesInCurrentFile [
 	"This is a generic implementation but it can be overriden"
 

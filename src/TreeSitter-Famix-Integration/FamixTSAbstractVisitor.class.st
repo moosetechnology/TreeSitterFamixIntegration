@@ -9,7 +9,8 @@ Class {
 	#instVars : [
 		'fileReference',
 		'model',
-		'sourceText'
+		'sourceText',
+		'encoding'
 	],
 	#category : 'TreeSitter-Famix-Integration-Core',
 	#package : 'TreeSitter-Famix-Integration',
@@ -25,6 +26,14 @@ FamixTSAbstractVisitor >> buildVisitMethodNameFor: aTSNode [
 			   aStream nextPut: $: ]) asSymbol
 ]
 
+{ #category : 'private' }
+FamixTSAbstractVisitor >> detectEncoding [
+
+	^ [ self fileReference binaryReadStreamDo: [ :in | (ZnCharacterEncoder detectEncoding: in upToEnd) identifier ] ]
+		  on: ZnCharacterEncodingError
+		  do: [ nil ]
+]
+
 { #category : 'reflective operations' }
 FamixTSAbstractVisitor >> doesNotUnderstand: aMessage [
 
@@ -33,6 +42,12 @@ FamixTSAbstractVisitor >> doesNotUnderstand: aMessage [
 			^ super visitNode: aMessage argument ].
 
 	^ super doesNotUnderstand: aMessage
+]
+
+{ #category : 'accessing' }
+FamixTSAbstractVisitor >> encoding [
+
+	^ encoding ifNil: [ encoding := self detectEncoding ]
 ]
 
 { #category : 'accessing' }
@@ -45,7 +60,8 @@ FamixTSAbstractVisitor >> fileReference [
 FamixTSAbstractVisitor >> fileReference: anObject [
 
 	fileReference := anObject.
-	sourceText := nil
+	sourceText := nil.
+	encoding := nil
 ]
 
 { #category : 'initialization' }
@@ -106,8 +122,15 @@ FamixTSAbstractVisitor >> setSourceAnchorTo: aFamixEntity fileName: aString star
 { #category : 'accessing' }
 FamixTSAbstractVisitor >> sourceText [
 
-	self flag: #todo. "Manage encorders."
-	^ sourceText ifNil: [ sourceText := self fileReference contents ]
+	^ sourceText ifNil: [ sourceText := self fileReference binaryReadStreamDo: [ :in | (ZnCharacterReadStream on: in encoding: self encoding) upToEnd ] ]
+]
+
+{ #category : 'accessing' }
+FamixTSAbstractVisitor >> treeSitterEncoding [
+
+	self encoding = #utf8 ifTrue: [ ^ TSInputEncoding tsinputencodingutf8 ].
+
+	self error: 'This encoder was not managed yet.'
 ]
 
 { #category : 'visiting' }
