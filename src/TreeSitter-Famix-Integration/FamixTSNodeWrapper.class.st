@@ -7,7 +7,9 @@ Class {
 	#instVars : [
 		'tsNode',
 		'parent',
-		'children'
+		'children',
+		'sourceText',
+		'startPosition'
 	],
 	#category : 'TreeSitter-Famix-Integration-Wrappers',
 	#package : 'TreeSitter-Famix-Integration',
@@ -83,9 +85,9 @@ FamixTSNodeWrapper >> encoding [
 FamixTSNodeWrapper >> endPosition [
 	"Return the end position of the node in number of characters.
 	
-	Since we know the position as the number of bytes, we read this number of bytes, decode it with the encoding we used and check the number of characters. "
+	Instead of reading multiple times the file we use the cache of #startPosition and #sourceText."
 
-	^ self fileReference binaryReadStreamDo: [ :stream | tsNode endPositionFrom: stream encoding: self encoding ]
+	^ self startPosition + self sourceText size - 1
 ]
 
 { #category : 'inspector' }
@@ -246,16 +248,14 @@ FamixTSNodeWrapper >> sourceInspectorExtension: builder [
 { #category : 'accessing' }
 FamixTSNodeWrapper >> sourceText [
 
-	^ self fileReference binaryReadStreamDo: [ :stream | tsNode textFrom: stream encoding: self encoding ]
+	^ sourceText ifNil: [ sourceText := self fileReference binaryReadStreamDo: [ :stream | tsNode textFrom: stream encoding: self encoding ] ]
 ]
 
 { #category : 'accessing' }
 FamixTSNodeWrapper >> startPosition [
-	"Return the start position of the node in number of characters.
-	
-	Since we know the position as the number of bytes, we read this number of bytes, decode it with the encoding we used and check the number of characters. "
+	"Return the start position of the node in number of characters."
 
-	^ self fileReference binaryReadStreamDo: [ :stream | tsNode startPositionFrom: stream encoding: self encoding ]
+	^ startPosition ifNil: [ startPosition := self fileReference binaryReadStreamDo: [ :stream | tsNode startPositionFrom: stream encoding: self encoding ] ]
 ]
 
 { #category : 'accessing' }
