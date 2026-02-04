@@ -9,7 +9,8 @@ Class {
 		'parent',
 		'children',
 		'sourceText',
-		'startPosition'
+		'startPosition',
+		'type'
 	],
 	#category : 'TreeSitter-Famix-Integration-Wrappers',
 	#package : 'TreeSitter-Famix-Integration',
@@ -247,15 +248,19 @@ FamixTSNodeWrapper >> sourceInspectorExtension: builder [
 
 { #category : 'accessing' }
 FamixTSNodeWrapper >> sourceText [
+	"We don't need the buffered stream so we use the wrapped stream for speed."
 
-	^ sourceText ifNil: [ sourceText := self fileReference binaryReadStreamDo: [ :stream | tsNode textFrom: stream encoding: self encoding ] ]
+	^ sourceText ifNil: [ sourceText := self fileReference binaryReadStreamDo: [ :stream | tsNode textFrom: stream wrappedStream encoding: self encoding ] ]
 ]
 
 { #category : 'accessing' }
 FamixTSNodeWrapper >> startPosition [
-	"Return the start position of the node in number of characters."
+	"Return the start position of the node in number of characters.
+	
+	We don't need the buffered stream so we use the wrapped stream for speed."
 
-	^ startPosition ifNil: [ startPosition := self fileReference binaryReadStreamDo: [ :stream | tsNode startPositionFrom: stream encoding: self encoding ] ]
+	^ startPosition ifNil: [
+		  startPosition := self fileReference binaryReadStreamDo: [ :stream | tsNode startPositionFrom: stream wrappedStream encoding: self encoding ] ]
 ]
 
 { #category : 'accessing' }
@@ -282,6 +287,13 @@ FamixTSNodeWrapper >> tsTreeExtension: builder [
 		  roots: { self };
 		  beResizable;
 		expandAll
+]
+
+{ #category : 'accessing' }
+FamixTSNodeWrapper >> type [
+	"Cache to avoid stressing too much FFI"
+
+	^ type ifNil: [ type := tsNode type ]
 ]
 
 { #category : 'accessing' }
