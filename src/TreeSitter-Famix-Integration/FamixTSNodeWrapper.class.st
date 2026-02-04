@@ -74,9 +74,18 @@ FamixTSNodeWrapper >> doesNotUnderstand: aMessage [
 ]
 
 { #category : 'accessing' }
-FamixTSNodeWrapper >> endPosition [
+FamixTSNodeWrapper >> encoding [
 
-	^ self completeSource positionFromTSPoint: tsNode endPoint
+	^ self parent encoding
+]
+
+{ #category : 'accessing' }
+FamixTSNodeWrapper >> endPosition [
+	"Return the end position of the node in number of characters.
+	
+	Since we know the position as the number of bytes, we read this number of bytes, decode it with the encoding we used and check the number of characters. "
+
+	^ self fileReference binaryReadStreamDo: [ :stream | tsNode endPositionFrom: stream encoding: self encoding ]
 ]
 
 { #category : 'inspector' }
@@ -97,6 +106,12 @@ FamixTSNodeWrapper >> fieldsInspectorExtension: aBuilder [
 				   beSortable);
 		  items: (self collectFieldNameOfNamedChild associations collect: [ :e | StInspectorAssociationNode hostObject: e ]);
 		  yourself
+]
+
+{ #category : 'accessing' }
+FamixTSNodeWrapper >> fileReference [
+
+	^ self parent fileReference
 ]
 
 { #category : 'inspector' }
@@ -231,13 +246,16 @@ FamixTSNodeWrapper >> sourceInspectorExtension: builder [
 { #category : 'accessing' }
 FamixTSNodeWrapper >> sourceText [
 
-	^ tsNode textFromSourceText: self completeSource
+	^ self fileReference binaryReadStreamDo: [ :stream | tsNode textFrom: stream encoding: self encoding ]
 ]
 
 { #category : 'accessing' }
 FamixTSNodeWrapper >> startPosition [
+	"Return the start position of the node in number of characters.
+	
+	Since we know the position as the number of bytes, we read this number of bytes, decode it with the encoding we used and check the number of characters. "
 
-	^ (self completeSource positionFromTSPoint: tsNode startPoint) + 1
+	^ self fileReference binaryReadStreamDo: [ :stream | tsNode startPositionFrom: stream encoding: self encoding ]
 ]
 
 { #category : 'accessing' }
