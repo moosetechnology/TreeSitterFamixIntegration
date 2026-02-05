@@ -29,7 +29,7 @@ FamixTSAbstractVisitor >> buildVisitMethodNameFor: aTSNode [
 { #category : 'private' }
 FamixTSAbstractVisitor >> detectEncoding [
 
-	^ [ self fileReference binaryReadStreamDo: [ :in | (ZnCharacterEncoder detectEncoding: in upToEnd) identifier ] ]
+	^ [ self fileReference binaryReadStreamDo: [ :in | ZnCharacterEncoder detectEncoding: in upToEnd ] ]
 		  on: ZnCharacterEncodingError
 		  do: [ nil ]
 ]
@@ -128,11 +128,7 @@ FamixTSAbstractVisitor >> sourceText [
 { #category : 'accessing' }
 FamixTSAbstractVisitor >> treeSitterEncoding [
 
-	self encoding = #utf8 ifTrue: [ ^ TSInputEncoding tsinputencodingutf8 ].
-
-	self encoding = #ascii ifTrue: [ ^ TSInputEncoding tsinputencodingutf8 ].
-
-	self error: 'This encoder was not managed yet.'
+	^ self encoding treeSitterEncoding
 ]
 
 { #category : 'visiting' }
