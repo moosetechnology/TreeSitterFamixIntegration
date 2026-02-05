@@ -7,7 +7,9 @@ Class {
 	#instVars : [
 		'visitor',
 		'completeSource',
-		'relativePath'
+		'relativePath',
+		'fileReference',
+		'encoding'
 	],
 	#category : 'TreeSitter-Famix-Integration-Wrappers',
 	#package : 'TreeSitter-Famix-Integration',
@@ -25,6 +27,18 @@ FamixTSRootNodeWrapper >> accept: aVisitor [
 FamixTSRootNodeWrapper >> completeSource [
 
 	^ completeSource
+]
+
+{ #category : 'accessing' }
+FamixTSRootNodeWrapper >> encoding [
+
+	^ encoding
+]
+
+{ #category : 'accessing' }
+FamixTSRootNodeWrapper >> fileReference [
+
+	^ fileReference
 ]
 
 { #category : 'accessing' }
@@ -50,5 +64,7 @@ FamixTSRootNodeWrapper >> visitor: anObject [
 
 	visitor := anObject.
 	completeSource := visitor sourceText.
-	relativePath := visitor relativeFilePath
+	relativePath := visitor relativeFilePath.
+	fileReference := visitor fileReference.
+	encoding := visitor encoding
 ]

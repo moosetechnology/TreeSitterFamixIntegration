@@ -7,7 +7,10 @@ Class {
 	#instVars : [
 		'tsNode',
 		'parent',
-		'children'
+		'children',
+		'sourceText',
+		'startPosition',
+		'type'
 	],
 	#category : 'TreeSitter-Famix-Integration-Wrappers',
 	#package : 'TreeSitter-Famix-Integration',
@@ -74,9 +77,18 @@ FamixTSNodeWrapper >> doesNotUnderstand: aMessage [
 ]
 
 { #category : 'accessing' }
-FamixTSNodeWrapper >> endPosition [
+FamixTSNodeWrapper >> encoding [
 
-	^ self completeSource positionFromTSPoint: tsNode endPoint
+	^ self parent encoding
+]
+
+{ #category : 'accessing' }
+FamixTSNodeWrapper >> endPosition [
+	"Return the end position of the node in number of characters.
+	
+	Instead of reading multiple times the file we use the cache of #startPosition and #sourceText."
+
+	^ self startPosition + self sourceText size - 1
 ]
 
 { #category : 'inspector' }
@@ -97,6 +109,12 @@ FamixTSNodeWrapper >> fieldsInspectorExtension: aBuilder [
 				   beSortable);
 		  items: (self collectFieldNameOfNamedChild associations collect: [ :e | StInspectorAssociationNode hostObject: e ]);
 		  yourself
+]
+
+{ #category : 'accessing' }
+FamixTSNodeWrapper >> fileReference [
+
+	^ self parent fileReference
 ]
 
 { #category : 'inspector' }
@@ -230,14 +248,19 @@ FamixTSNodeWrapper >> sourceInspectorExtension: builder [
 
 { #category : 'accessing' }
 FamixTSNodeWrapper >> sourceText [
+	"We don't need the buffered stream so we use the wrapped stream for speed."
 
-	^ tsNode textFromSourceText: self completeSource
+	^ sourceText ifNil: [ sourceText := self fileReference binaryReadStreamDo: [ :stream | tsNode textFrom: stream wrappedStream encoding: self encoding ] ]
 ]
 
 { #category : 'accessing' }
 FamixTSNodeWrapper >> startPosition [
+	"Return the start position of the node in number of characters.
+	
+	We don't need the buffered stream so we use the wrapped stream for speed."
 
-	^ (self completeSource positionFromTSPoint: tsNode startPoint) + 1
+	^ startPosition ifNil: [
+		  startPosition := self fileReference binaryReadStreamDo: [ :stream | tsNode startPositionFrom: stream wrappedStream encoding: self encoding ] ]
 ]
 
 { #category : 'accessing' }
@@ -264,6 +287,13 @@ FamixTSNodeWrapper >> tsTreeExtension: builder [
 		  roots: { self };
 		  beResizable;
 		expandAll
+]
+
+{ #category : 'accessing' }
+FamixTSNodeWrapper >> type [
+	"Cache to avoid stressing too much FFI"
+
+	^ type ifNil: [ type := tsNode type ]
 ]
 
 { #category : 'accessing' }
