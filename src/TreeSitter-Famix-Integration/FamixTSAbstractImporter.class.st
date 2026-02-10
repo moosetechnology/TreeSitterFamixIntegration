@@ -57,8 +57,8 @@ FamixTSAbstractImporter >> importFile: aFileReference [
 	parser language: self treeSitterLanguage.
 
 	visitor fileReference: aFileReference.
-	tree := parser parseString: visitor fileReference binaryReadStream upToEnd usingTree:  ExternalAddress null  encoding: visitor treeSitterEncoding.
-
+	tree := parser parseString: visitor fileReference binaryReadStream wrappedStream upToEnd usingTree: ExternalAddress null tsEncoding: visitor treeSitterEncoding.
+	
 	"(aFileReference basename = #'moduleAtRoot12.py') ifTrue: [ 1halt ]."
 
 	FamixTSRootNodeWrapper new
