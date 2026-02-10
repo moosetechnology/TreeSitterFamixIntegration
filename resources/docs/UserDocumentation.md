@@ -331,12 +331,35 @@ createWriteAccessTo: variable from: anAssignmentNode
 	self setSourceAnchor: access from: anAssignmentNode
 ```
 
+Be careful! In order for the sources anchors to be set, you need to have a class implementing `FamixTBytesFileAnchor` in your model.
+
+You can add this to your generator:
+
+```st
+defineClasses
+
+	super defineClasses.
+
+	bytesFileAnchor := builder newClassNamed: #BytesFileAnchor
+```
+
+and
+
+```st
+defineHierarchy
+
+	super defineHierarchy.
+
+	bytesFileAnchor --|> sourceAnchor.
+	bytesFileAnchor --|> #TBytesFileAnchor
+```
+
 ### Other utilities
 
 Other little things can make your like easier.
 
 For example:
-- The visitor knows the file reference been parsed with `#fileReference`.
+- The visitor knows the file reference been parsed with `#fileReference` and its encoding with `#encoding`.
 - It knows the sources that produced the `TSTree` with `#sourceText`.
 - It knows also the model in which we need to create the entities with `#model`.
 - It knows the relative path to the file that produced the tree from the root folder with `#relativePath`.

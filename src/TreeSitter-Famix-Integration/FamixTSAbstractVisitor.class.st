@@ -100,17 +100,17 @@ FamixTSAbstractVisitor >> setSourceAnchor: aFamixEntity from: aTSNode [
 	^ self
 		  setSourceAnchorTo: aFamixEntity
 		  fileName: aTSNode relativePath
-		  start: aTSNode startPosition
-		  end: aTSNode endPosition
+		  start: aTSNode startByte + 1 "To respect Pharo indexes starting at 1"
+		  end: aTSNode endByte
 ]
 
 { #category : 'private' }
 FamixTSAbstractVisitor >> setSourceAnchorTo: aFamixEntity fileName: aString start: aNumber end: anotherNumber [
 
-	aFamixEntity sourceAnchor: (model newIndexedFileAnchor
+	aFamixEntity sourceAnchor: (model newBytesFileAnchor
 			 fileName: aString;
-			 startPos: aNumber;
-			 endPos: anotherNumber;
+			 startByte: aNumber;
+			 endByte: anotherNumber;
 			 mooseModel: self model;
 			 yourself).
 
