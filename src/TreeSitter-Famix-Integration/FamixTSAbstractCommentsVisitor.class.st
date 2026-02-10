@@ -3,7 +3,7 @@ I am the base a TreeSitter visitor to import comments of a project.
 
 I need to be subclasses so that #visitNode: is reimplemented in a way to find the comment intervals in the tree. Then I manage the comments.
 
-I transform these positions into comment entities attached to the right entity in the file.
+I transform these positions in bytes into comment entities attached to the right entity in the file.
 
 I'll check multiple things:
 - If single line comments follow each other I'll merge them
@@ -100,7 +100,7 @@ FamixTSAbstractCommentsVisitor >> entitiesInFile [
 
 	^ entitiesInFile ifNil: [
 			  entitiesInFile := (self computeEntitiesInCurrentFile select: [ :entity | entity sourceAnchor isNotNil ]) sorted:
-				                    [ :entity | entity sourceAnchor numberOfCharacters ] ascending ]
+				                    [ :entity | entity sourceAnchor numberOfBytes ] ascending ]
 ]
 
 { #category : 'actions' }
@@ -114,8 +114,8 @@ FamixTSAbstractCommentsVisitor >> entityFollowingComment: commentInterval [
 	```
 	"
 	"Take the entity right after the comment"
-	((self entitiesInFile select: [ :entity | entity sourceAnchor startPos > commentInterval second ]) detectMin: [ :entity | entity sourceAnchor startPos ])
-		ifNotNil: [ :entity | (self source hasOnlySpacesAndTabsBetween: commentInterval second + 1 and: entity sourceAnchor startPos - 1) ifTrue: [ ^ entity ] ].
+	((self entitiesInFile select: [ :entity | entity sourceAnchor startByte > commentInterval second ]) detectMin: [ :entity | entity sourceAnchor startByte ])
+		ifNotNil: [ :entity | (self hasOnlySpacesAndTabsBetween: commentInterval second and: entity sourceAnchor startByte) ifTrue: [ ^ entity ] ].
 	^ nil
 ]
 
@@ -128,11 +128,31 @@ FamixTSAbstractCommentsVisitor >> entityOnLineOfComment: commentInterval [
 
 	"Take the entity right before the comment"
 
-	((self entitiesInFile select: [ :entity | entity isStructuralEntity and: [ entity sourceAnchor endPos < commentInterval first ] ]) detectMax: [ :entity | "We take the start because comments are not considered part of the entites so we might have multiple entities with the same end pos if they are imbricated."
-		 entity sourceAnchor startPos ]) ifNotNil: [ :entity |
-		(self source hasNoLineReturnBetween: entity sourceAnchor endPos + 1 and: commentInterval first - 1) ifTrue: [ ^ entity ] ].
+	((self entitiesInFile select: [ :entity | entity isStructuralEntity and: [ entity sourceAnchor endByte < commentInterval first ] ]) detectMax: [ :entity | "We take the start because comments are not considered part of the entites so we might have multiple entities with the same end pos if they are imbricated."
+		 entity sourceAnchor startByte ]) ifNotNil: [ :entity |
+		(self hasNoLineReturnBetween: entity sourceAnchor endByte + 1 and: commentInterval first - 1) ifTrue: [ ^ entity ] ].
 
 	^ nil
+]
+
+{ #category : 'private' }
+FamixTSAbstractCommentsVisitor >> hasNoLineReturnBetween: startByte and: endByte [
+	"Start and end bytes are excluded from the search."
+
+	"No need to even check the content if the bytes are following"
+	endByte - startByte > 1 ifFalse: [ ^ true ].
+
+	^ (self textFrom: startByte to: endByte) noneSatisfy: [ :character | character = Character lf or: [ character = Character cr ] ]
+]
+
+{ #category : 'private' }
+FamixTSAbstractCommentsVisitor >> hasOnlySpacesAndTabsBetween: startByte and: endByte [
+	"Start and end bytes are excluded from the search."
+
+	"No need to even check the content if the bytes are following"
+	endByte - startByte > 1 ifFalse: [ ^ true ].
+
+	^ (self textFrom: startByte to: endByte) allSatisfy: [ :character | character isSpaceSeparator or: [ character = Character tab ] ]
 ]
 
 { #category : 'actions' }
@@ -146,7 +166,7 @@ FamixTSAbstractCommentsVisitor >> import [
 			intervals := OrderedCollection new.
 			singleLineIntervals do: [ :interval |
 					intervals ifEmpty: [ intervals add: interval ] ifNotEmpty: [ "We can merge if we have only spaces and tabs between the comments."
-							(self source hasOnlySpacesAndTabsBetween: intervals last second + 1 and: interval first - 1)
+							(self hasOnlySpacesAndTabsBetween: intervals last second and: interval first)
 								ifTrue: [ intervals last at: 2 put: interval second ]
 								ifFalse: [ intervals add: interval ] ] ].
 
@@ -168,10 +188,11 @@ FamixTSAbstractCommentsVisitor >> initialize [
 
 { #category : 'accessing' }
 FamixTSAbstractCommentsVisitor >> intervalOf: aNode [
+	"Return the interval of the node with the position in bytes."
 
 	^ {
-		  aNode startPosition.
-		  (aNode rootNode endPosition min: aNode endPosition + 1) "Take the line return. This might not work on files from windows since it's CRLF also we can have spaces before the line return. We should maybe do something more robust. Also, do not take it of we are at the end of the file." }
+		  (aNode startByte + 1). "To start at 1"
+		  (aNode rootNode endByte min: aNode endByte + 1) "Take the line return. This might not work on files from windows since it's CRLF also we can have spaces before the line return. We should maybe do something more robust. Also, do not take it of we are at the end of the file." }
 ]
 
 { #category : 'accessing' }
@@ -183,6 +204,17 @@ FamixTSAbstractCommentsVisitor >> model [
 { #category : 'accessing' }
 FamixTSAbstractCommentsVisitor >> source [
 	^ visitor sourceText
+]
+
+{ #category : 'private' }
+FamixTSAbstractCommentsVisitor >> textFrom: startByte to: endByte [
+	"Optimized for perfs.
+	USe the wrapped stream to skip the buffer. Read the right number of bytes and decode the content."
+
+	^ (visitor fileReference binaryReadStreamDo: [ :in |
+			   in wrappedStream
+				   skip: startByte;
+				   next: endByte - startByte - 1 ]) decodeWith: visitor encoding
 ]
 
 { #category : 'accessing' }

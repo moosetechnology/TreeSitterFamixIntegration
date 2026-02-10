@@ -9,7 +9,6 @@ Class {
 		'parent',
 		'children',
 		'sourceText',
-		'startPosition',
 		'type'
 	],
 	#category : 'TreeSitter-Famix-Integration-Wrappers',
@@ -259,8 +258,7 @@ FamixTSNodeWrapper >> startPosition [
 	
 	We don't need the buffered stream so we use the wrapped stream for speed."
 
-	^ startPosition ifNil: [
-		  startPosition := self fileReference binaryReadStreamDo: [ :stream | tsNode startPositionFrom: stream wrappedStream encoding: self encoding ] ]
+	^ self fileReference binaryReadStreamDo: [ :stream | tsNode startPositionFrom: stream wrappedStream encoding: self encoding ]
 ]
 
 { #category : 'accessing' }
