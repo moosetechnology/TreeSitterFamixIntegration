@@ -479,7 +479,7 @@ By default, at the end of the parsing, if error happened, they will be inspected
 
 This section will describe TSSymbolsBuilderVisitor that is now part of the Pharo-Tree-Sitter project directly.
 
-It is a little visitor used to see all the symbols present in a project and explore their children (grouped by their fields) and parents.
+It is a little visitor used to understand the structure of TS nodes present in the tree you are managing.
 
 You can use it like this: 
 
@@ -491,6 +491,14 @@ You can use it like this:
 And you will get a result like this: 
 
 ![Inspector](inspector.png)
+
+This inspector allow you to see multiple information:
+- All the nodes types present in the source code parsed
+- All the fields present in each node type
+- The node types found in each symbols
+- The cardinality of the children (for example, if you are in a node and it always have 1 child in a field, it will display `Size: 1`. If it happened there was nothing in this field in some cases and once you got 12 children in the same field, it will display: `Size: 0..12`
+- By selecting a child node type, we can see an example of code with the configuration selected
+- The list of possible node types in which the symbol was found
 
 > Note: Be careful, you are not guarantee to have all possible child and parents since it will produce the mapping from what it encounters in the files you will provide. To be more accurate, give it the maximum number of sources possible.
 
